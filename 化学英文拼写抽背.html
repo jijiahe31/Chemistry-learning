@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>化学英文拼写抽背</title>
+  <style>
+    /* 全部样式内置；不使用在线字体、图片或外部资源。 */
+    :root { color-scheme: light; --ink:#18332d; --muted:#64766f; --line:#dce6df; --green:#28745a; --soft:#edf5ef; --red:#b3423d; }
+    * { box-sizing:border-box; }
+    [hidden] { display:none !important; }
+    body { margin:0; background:#f4f6f2; color:var(--ink); font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif; line-height:1.6; }
+    button,input { font:inherit; }
+    button { cursor:pointer; }
+    button:disabled { cursor:default; opacity:.6; }
+    :focus-visible { outline:3px solid #83bba0; outline-offset:4px; }
+    .app { max-width:920px; margin:0 auto; padding:42px 24px 24px; }
+    .header { display:flex; align-items:center; gap:16px; margin-bottom:28px; }
+    .mark { width:58px; height:64px; border:2px solid var(--green); border-radius:12px; padding:3px 9px; color:var(--green); line-height:1.1; }
+    .mark small { font-size:12px; }
+    .mark strong { display:block; font-size:31px; text-align:center; }
+    h1 { font-size:25px; margin:0; letter-spacing:.03em; }
+    h2 { font-size:24px; margin:6px 0 10px; }
+    h3 { font-size:17px; margin:0; }
+    p { margin:0; }
+    .muted { color:var(--muted); font-size:14px; }
+    .eyebrow { font-size:12px; color:var(--green); font-weight:700; letter-spacing:.13em; }
+    .card { background:white; border:1px solid var(--line); border-radius:22px; box-shadow:0 10px 40px #18332d06; overflow:hidden; }
+    .setup { padding:34px; }
+    fieldset { border:0; padding:0; margin:26px 0 24px; }
+    legend,.field-label { font-size:14px; font-weight:650; margin-bottom:10px; display:block; }
+    .modes { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .mode { position:relative; cursor:pointer; }
+    .mode input { position:absolute; width:1px; height:1px; opacity:0; }
+    .mode-body { display:block; border:1px solid var(--line); border-radius:14px; padding:19px; transition:background .15s,border-color .15s; }
+    .mode input:checked + .mode-body { border-color:var(--green); background:var(--soft); box-shadow:inset 0 0 0 1px var(--green); }
+    .mode input:focus-visible + .mode-body { outline:3px solid #83bba0; outline-offset:4px; }
+    .mode-title { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:5px; font-weight:700; }
+    .badge { font-size:12px; font-weight:500; color:var(--green); background:#ffffffb3; padding:2px 9px; border-radius:20px; white-space:nowrap; }
+    input[type="number"],input[type="text"] { border:1px solid #cad8ce; border-radius:11px; background:white; color:var(--ink); padding:13px 15px; }
+    input:focus { border-color:var(--green); }
+    input:disabled { background:#f5f7f4; }
+    #count { width:150px; }
+    .count-row { display:flex; align-items:center; flex-wrap:wrap; gap:14px; }
+    .rule { padding:16px 18px; background:#f6f8f4; border-radius:12px; margin:25px 0; font-size:14px; color:#52665b; }
+    .primary { border:0; background:var(--green); color:white; border-radius:11px; padding:13px 24px; font-weight:650; }
+    .primary:hover:not(:disabled) { background:#205e49; }
+    .start-button { min-width:190px; }
+    .form-error { color:var(--red); font-size:14px; margin:10px 0; }
+    .stats { padding:24px 30px; border-bottom:1px solid var(--line); background:#f9fbf8; }
+    .stats-top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
+    .stat-grid { display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:12px; }
+    .stat-label { display:block; color:var(--muted); font-size:12px; margin-bottom:4px; }
+    .stat-value { font-size:25px; font-weight:700; font-variant-numeric:tabular-nums; }
+    .good { color:var(--green); }
+    .bad { color:var(--red); }
+    progress { display:block; width:100%; height:7px; margin:18px 0 8px; border:0; border-radius:10px; overflow:hidden; background:#e5ece5; accent-color:var(--green); }
+    progress::-webkit-progress-bar { background:#e5ece5; }
+    progress::-webkit-progress-value { background:var(--green); border-radius:10px; }
+    progress::-moz-progress-bar { background:var(--green); border-radius:10px; }
+    .stats-note { font-size:12px; color:var(--muted); }
+    .question { padding:32px 34px 30px; }
+    .prompt { text-align:center; padding:8px 0 26px; }
+    .formula { display:block; font-size:clamp(40px,6vw,60px); font-weight:650; line-height:1.5; letter-spacing:.03em; overflow-wrap:anywhere; }
+    sub { font-size:.58em; vertical-align:baseline; position:relative; bottom:-.22em; }
+    .answer-row { display:flex; gap:12px; }
+    #answer { width:100%; min-width:0; flex:1; font-size:17px; }
+    .answer-row button { white-space:nowrap; }
+    .input-note { font-size:12px; color:var(--muted); margin-top:9px; }
+    .feedback { margin-top:16px; padding:14px 16px; border-radius:12px; min-height:54px; background:#f6f8f4; color:var(--muted); font-size:14px; }
+    .feedback.success { background:#edf7ef; color:#246743; }
+    .feedback.retry { background:#fff6e6; color:#886018; }
+    .feedback.error { background:#fff0ee; color:var(--red); }
+    #correct-answer { display:block; margin-top:5px; font-size:18px; font-weight:650; overflow-wrap:anywhere; }
+    .continue-row { margin-top:16px; text-align:right; }
+    .result { padding:34px; }
+    .result-hero { text-align:center; border-bottom:1px solid var(--line); padding:10px 0 26px; }
+    .result-rate { font-size:64px; font-weight:750; color:var(--green); line-height:1.25; margin:12px 0; font-variant-numeric:tabular-nums; }
+    .grade { font-size:19px; font-weight:700; margin-bottom:10px; }
+    .mistake-header { display:flex; justify-content:space-between; align-items:center; margin:26px 0 14px; }
+    .mistake-list { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+    .mistake-list li { display:grid; grid-template-columns:minmax(100px,1fr) 2fr; gap:16px; border:1px solid var(--line); background:#fafbf9; padding:13px 18px; border-radius:11px; align-items:center; }
+    .mistake-formula { font-size:20px; font-weight:650; overflow-wrap:anywhere; }
+    .mistake-answer { overflow-wrap:anywhere; }
+    .empty-state { padding:22px; text-align:center; border-radius:12px; background:var(--soft); color:var(--green); }
+    .result-actions { margin-top:26px; text-align:center; }
+    footer { text-align:center; font-size:12px; color:var(--muted); padding:20px 0; }
+    @media(max-width:600px) {
+      .app { padding:24px 14px 12px; }
+      h1 { font-size:21px; }
+      .setup,.question,.result { padding:24px 20px; }
+      .stats { padding:20px; }
+      .modes { grid-template-columns:1fr; }
+      .stat-grid { grid-template-columns:1fr 1fr; gap:18px; }
+      .answer-row { flex-direction:column; }
+      .mistake-list li { grid-template-columns:1fr; gap:4px; }
+      .grade { font-size:17px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="mark" aria-hidden="true"><small>6</small><strong>C</strong></div>
+      <div><h1>化学英文拼写抽背</h1><p class="muted">看符号，写名称。每一轮都是一次小小的进步。</p></div>
+    </header>
+
+    <!-- 三个视图只切换显示状态，不跳转、不刷新。 -->
+    <section id="setup-view" class="card setup" aria-labelledby="setup-title">
+      <p class="eyebrow">准备开始</p>
+      <h2 id="setup-title" tabindex="-1">设定你的练习</h2>
+      <p class="muted">选择词库和题数，本轮题目随机抽取且不重复。</p>
+      <form id="setup-form" novalidate>
+        <fieldset>
+          <legend>选择难度</legend>
+          <div class="modes">
+            <label class="mode">
+              <input type="radio" name="difficulty" value="easy" checked>
+              <span class="mode-body"><span class="mode-title">简单模式 <span class="badge">36 个元素</span></span><span class="muted">元素符号 → 英文全称</span></span>
+            </label>
+            <label class="mode">
+              <input type="radio" name="difficulty" value="hard">
+              <span class="mode-body"><span class="mode-title">困难模式 <span class="badge">45 个词条</span></span><span class="muted">酸、碱、盐与单质 → 英文名称</span></span>
+            </label>
+          </div>
+        </fieldset>
+        <label class="field-label" for="count">抽背题数</label>
+        <div class="count-row"><input id="count" type="number" min="1" max="36" step="1" value="10" required aria-describedby="count-tip setup-error"><span id="count-tip" class="muted">请输入 1～36 的整数</span></div>
+        <p id="setup-error" class="form-error" role="alert" hidden></p>
+        <div class="rule">每题有两次机会：第一次答错不扣分，第二次答对仍计为正确；两次都错会公布答案，确认后继续。</div>
+        <button type="submit" class="primary start-button">确认并开始练习 →</button>
+      </form>
+    </section>
+
+    <section id="quiz-view" class="card" aria-label="答题页面" hidden>
+      <div class="stats" aria-label="作答统计面板">
+        <div class="stats-top"><h3>作答统计</h3><span id="mode-tag" class="badge"></span></div>
+        <div class="stat-grid">
+          <div><span class="stat-label">当前题目</span><span id="question-counter" class="stat-value"></span></div>
+          <div><span class="stat-label">已答对</span><span id="correct-count" class="stat-value good">0</span></div>
+          <div><span class="stat-label">已答错</span><span id="wrong-count" class="stat-value bad">0</span></div>
+          <div><span class="stat-label">实时正确率</span><span id="live-rate" class="stat-value">0%</span></div>
+        </div>
+        <progress id="progress" value="0" max="10" aria-label="已完成题目进度"></progress>
+        <p class="stats-note"><span id="completed-count">已完成 0 题</span> · 正确率按已完成题目计算，第一次答错不计入统计。</p>
+      </div>
+      <div class="question">
+        <div class="prompt"><p id="question-instruction" class="muted"></p><div id="question-formula" class="formula"></div><p id="attempt-tip" class="muted">第 1 次作答 · 共 2 次机会</p></div>
+        <form id="answer-form" novalidate>
+          <label class="field-label" for="answer">你的英文答案</label>
+          <div class="answer-row"><input id="answer" type="text" placeholder="在这里输入英文名称" autocomplete="off" autocapitalize="off" spellcheck="false" required aria-describedby="input-note feedback"><button id="submit-button" type="submit" class="primary">提交答案 ↵</button></div>
+          <p id="input-note" class="input-note">大小写不敏感；空格和括号需与名称一致，请勿添加首尾空格。可能用到：(II)、(III)。</p>
+        </form>
+        <div id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"><span id="feedback-message">输入答案后按回车，或点击提交。</span><strong id="correct-answer" hidden></strong></div>
+        <div id="continue-row" class="continue-row" hidden><button id="continue-button" type="button" class="primary">确认，下一题 →</button></div>
+      </div>
+    </section>
+
+    <section id="result-view" class="card result" aria-labelledby="result-title" hidden>
+      <div class="result-hero"><p class="eyebrow">本轮完成</p><h2 id="result-title" tabindex="-1">练习结算</h2><div id="final-rate" class="result-rate"></div><p id="grade" class="grade"></p><p id="result-summary" class="muted"></p></div>
+      <div class="mistake-header"><h3>本轮错题</h3><span id="mistake-count" class="badge"></span></div>
+      <ul id="mistake-list" class="mistake-list" aria-label="错题及正确答案"></ul>
+      <p id="no-mistakes" class="empty-state" hidden>本轮没有错题，继续保持！</p>
+      <div class="result-actions"><button id="restart-button" type="button" class="primary start-button">再来一轮 →</button></div>
+    </section>
+    <footer>离线可用 · 随机不重复 · 两次作答机会</footer>
+  </main>
+
+  <script>
+    "use strict";
+    // 完整保留题目及答案原文；随机抽题只操作副本，不修改词库。
+    const BANKS = {
+      easy: {
+        H:"hydrogen", He:"helium", Li:"lithium", Be:"beryllium", B:"boron", C:"carbon",
+        N:"nitrogen", O:"oxygen", F:"fluorine", Ne:"neon", Na:"sodium", Mg:"magnesium",
+        Al:"aluminium", Si:"silicon", P:"phosphorus", S:"sulfur", Cl:"chlorine", Ar:"argon",
+        K:"potassium", Ca:"calcium", Sc:"scandium", Ti:"titanium", V:"vanadium", Cr:"chromium",
+        Mn:"manganese", Fe:"iron", Co:"cobalt", Ni:"nickel", Cu:"copper", Zn:"zinc",
+        Ga:"gallium", Ge:"germanium", As:"arsenic", Se:"selenium", Br:"bromine", Kr:"krypton"
+      },
+      hard: {
+        H2SO4:"sulfuric acid", HCl:"hydrochloric acid", HNO3:"nitric acid",
+        H2CO3:"carbonic acid", H3PO4:"phosphoric acid", CH3COOH:"acetic acid", H2SO3:"sulfurous acid",
+        NaOH:"sodium hydroxide", KOH:"potassium hydroxide", "Ca(OH)2":"calcium hydroxide",
+        "Ba(OH)2":"barium hydroxide", "Mg(OH)2":"magnesium hydroxide",
+        "Cu(OH)2":"copper(II) hydroxide", "Fe(OH)3":"iron(III) hydroxide",
+        NaCl:"sodium chloride", Na2CO3:"sodium carbonate", NaHCO3:"sodium hydrogen carbonate",
+        CaCO3:"calcium carbonate", CuSO4:"copper(II) sulfate", FeSO4:"iron(II) sulfate",
+        "Fe2(SO4)3":"iron(III) sulfate", AgNO3:"silver nitrate", BaSO4:"barium sulfate",
+        AgCl:"silver chloride", KNO3:"potassium nitrate", CaCl2:"calcium chloride",
+        CuCl2:"copper(II) chloride", ZnSO4:"zinc sulfate", FeCl3:"iron(III) chloride",
+        FeCl2:"iron(II) chloride", O2:"oxygen", H2:"hydrogen", N2:"nitrogen", Cl2:"chlorine",
+        C:"carbon", Fe:"iron", Cu:"copper", Zn:"zinc", Al:"aluminium", Mg:"magnesium",
+        Na:"sodium", K:"potassium", Ca:"calcium", S:"sulfur", P:"phosphorus"
+      }
+    };
+    const $ = id => document.getElementById(id);
+    const views = [$("setup-view"), $("quiz-view"), $("result-view")];
+    let round = null;
+    let transitionTimer = null;
+
+    function showView(id) {
+      views.forEach(view => { view.hidden = view.id !== id; });
+    }
+    function difficulty() {
+      return document.querySelector('input[name="difficulty"]:checked').value;
+    }
+    function updateLimit() {
+      const max = Object.keys(BANKS[difficulty()]).length;
+      $("count").max = max;
+      if (Number($("count").value) > max) $("count").value = max;
+      $("count-tip").textContent = `请输入 1～${max} 的整数`;
+      $("setup-error").hidden = true;
+      $("count").removeAttribute("aria-invalid");
+    }
+    // Fisher–Yates 洗牌后取前 N 项，保证本轮随机且不重复。
+    function sample(bank, count) {
+      const entries = Object.entries(bank);
+      for (let i = entries.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [entries[i], entries[j]] = [entries[j], entries[i]];
+      }
+      return entries.slice(0, count);
+    }
+    function percent(correct, total) {
+      return total ? `${Number((correct / total * 100).toFixed(1))}%` : "0%";
+    }
+    // 评级使用未四舍五入的比例，避免显示精度影响评级边界。
+    function rating(correct, total) {
+      const rate = correct / total;
+      if (rate === 1) return "φ(满昏！！)";
+      if (rate >= 0.9) return "S(“优秀”一词便是用来形容你的！)";
+      if (rate >= 0.8) return "A(不错，再接再厉！)";
+      if (rate >= 0.6) return "B(尚可，但仍有进步空间）";
+      return "C（或许你应该再巩固巩固？）";
+    }
+    // 仅将显示中的数字排为下标；原始化学式不变。
+    function renderFormula(element, formula) {
+      element.replaceChildren();
+      formula.split(/(\d+)/).filter(Boolean).forEach(part => {
+        if (/^\d+$/.test(part)) {
+          const sub = document.createElement("sub");
+          sub.textContent = part;
+          element.append(sub);
+        } else element.append(document.createTextNode(part));
+      });
+      element.setAttribute("aria-label", formula);
+    }
+    function updateStats() {
+      const total = round.questions.length;
+      const completed = round.correct + round.wrong.length;
+      $("question-counter").textContent = `${round.index + 1} / ${total}`;
+      $("correct-count").textContent = round.correct;
+      $("wrong-count").textContent = round.wrong.length;
+      $("live-rate").textContent = percent(round.correct, completed);
+      $("progress").max = total;
+      $("progress").value = completed;
+      $("completed-count").textContent = `已完成 ${completed} 题`;
+    }
+    function feedback(kind, message, answer = "") {
+      $("feedback").className = `feedback ${kind}`;
+      $("feedback-message").textContent = message;
+      $("correct-answer").textContent = answer ? `正确答案：${answer}` : "";
+      $("correct-answer").hidden = !answer;
+    }
+    function lockAnswer(locked) {
+      $("answer").disabled = locked;
+      $("submit-button").disabled = locked;
+    }
+    function presentQuestion() {
+      round.attempts = 0;
+      round.phase = "answering";
+      renderFormula($("question-formula"), round.questions[round.index][0]);
+      $("answer").value = "";
+      $("answer").removeAttribute("aria-invalid");
+      $("attempt-tip").textContent = "第 1 次作答 · 共 2 次机会";
+      $("continue-row").hidden = true;
+      feedback("", "输入答案后按回车，或点击提交。");
+      lockAnswer(false);
+      updateStats();
+      $("answer").focus();
+    }
+    function nextQuestion() {
+      clearTimeout(transitionTimer);
+      transitionTimer = null;
+      round.index++;
+      if (round.index >= round.questions.length) showResults();
+      else presentQuestion();
+    }
+    function showResults() {
+      round.phase = "finished";
+      const total = round.questions.length;
+      $("final-rate").textContent = percent(round.correct, total);
+      $("grade").textContent = rating(round.correct, total);
+      $("result-summary").textContent = `${round.mode === "easy" ? "简单" : "困难"}模式 · 共 ${total} 题 · 答对 ${round.correct} 题 · 答错 ${round.wrong.length} 题`;
+      $("mistake-count").textContent = `${round.wrong.length} 题`;
+      $("mistake-list").replaceChildren();
+      round.wrong.forEach(([formula, answer]) => {
+        const item = document.createElement("li");
+        const question = document.createElement("span");
+        question.className = "mistake-formula";
+        renderFormula(question, formula);
+        const solution = document.createElement("span");
+        solution.className = "mistake-answer";
+        solution.textContent = answer;
+        item.append(question, solution);
+        $("mistake-list").append(item);
+      });
+      $("no-mistakes").hidden = round.wrong.length !== 0;
+      showView("result-view");
+      $("result-title").focus();
+    }
+
+    document.querySelectorAll('input[name="difficulty"]').forEach(input => {
+      input.addEventListener("change", updateLimit);
+    });
+    $("setup-form").addEventListener("submit", event => {
+      event.preventDefault();
+      const mode = difficulty();
+      const count = Number($("count").value);
+      const max = Object.keys(BANKS[mode]).length;
+      if (!Number.isInteger(count) || count < 1 || count > max) {
+        $("setup-error").textContent = `题数必须是 1～${max} 的整数。`;
+        $("setup-error").hidden = false;
+        $("count").setAttribute("aria-invalid", "true");
+        $("count").focus();
+        return;
+      }
+      clearTimeout(transitionTimer);
+      round = { mode, questions:sample(BANKS[mode], count), index:0, attempts:0, correct:0, wrong:[], phase:"answering" };
+      $("mode-tag").textContent = mode === "easy" ? "简单模式 · 元素" : "困难模式 · 化合物与单质";
+      $("question-instruction").textContent = mode === "easy" ? "请写出这个元素的英文全称" : "请写出这个化学式对应的英文名称";
+      showView("quiz-view");
+      presentQuestion();
+    });
+    $("answer-form").addEventListener("submit", event => {
+      event.preventDefault();
+      // 状态锁防止连按回车或重复点击造成重复计分。
+      if (!round || round.phase !== "answering") return;
+      const rawAnswer = $("answer").value;
+      if (!rawAnswer.trim()) {
+        feedback("retry", "请先输入英文答案，空白输入不消耗作答机会。");
+        $("answer").focus();
+        return;
+      }
+      const [formula, expected] = round.questions[round.index];
+      round.attempts++;
+      // 只忽略大小写；保留空格、括号及其他拼写要求。
+      if (rawAnswer.toLowerCase() === expected.toLowerCase()) {
+        round.correct++;
+        round.phase = "transition";
+        lockAnswer(true);
+        feedback("success", "拼写正确，即将自动进入下一题。");
+        if (round.index === round.questions.length - 1) feedback("success", "拼写正确，即将显示本轮结果。");
+        updateStats();
+        transitionTimer = setTimeout(nextQuestion, 1000);
+      } else if (round.attempts === 1) {
+        feedback("retry", "拼写错误，请重试");
+        $("attempt-tip").textContent = "第 2 次作答 · 最后一次机会";
+        $("answer").setAttribute("aria-invalid", "true");
+        $("answer").focus();
+        $("answer").select();
+      } else {
+        round.wrong.push([formula, expected]);
+        round.phase = "confirming";
+        lockAnswer(true);
+        feedback("error", "两次作答均错误，本题已计入错题。记住答案后确认继续。", expected);
+        updateStats();
+        $("continue-row").hidden = false;
+        $("continue-button").textContent = round.index === round.questions.length - 1 ? "确认，查看结果 →" : "确认，下一题 →";
+        $("continue-button").focus();
+      }
+    });
+    $("answer").addEventListener("input", () => $("answer").removeAttribute("aria-invalid"));
+    // 中文输入法组合输入和长按回车不应触发额外提交或确认。
+    document.addEventListener("keydown", event => {
+      if (event.key === "Enter" && (event.isComposing || event.keyCode === 229 || event.repeat)) event.preventDefault();
+    });
+    $("continue-button").addEventListener("click", () => {
+      if (round && round.phase === "confirming") nextQuestion();
+    });
+    $("restart-button").addEventListener("click", () => {
+      clearTimeout(transitionTimer);
+      transitionTimer = null;
+      round = null;
+      updateLimit();
+      showView("setup-view");
+      $("setup-title").focus();
+    });
+    updateLimit();
+  </script>
+</body>
+</html>
